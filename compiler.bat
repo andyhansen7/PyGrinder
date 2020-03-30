@@ -3,6 +3,6 @@ pyinstaller ^
     --noconfirm ^
     --log-level=WARN ^
     --onefile ^
-    --nowindow ^
+    --noconsole ^
     --icon=.\pygrinder_icon.ico ^
 PyGrinder.py
