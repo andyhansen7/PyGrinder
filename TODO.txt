@@ -1,0 +1,7 @@
+- Add ability to save and upload config files (.pygrinder_config)
+- Add GUI scaling
+- Create .exe
+- Create dependency package generator
+- Clean up GUI
+- Update time after actions!!!
+
