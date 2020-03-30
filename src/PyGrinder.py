@@ -24,7 +24,7 @@ import threading
 
 class MainWindow(wx.Frame):
     def __init__(self, title):
-        super().__init__(parent=None, title=title, size=(800,600))
+        super().__init__(parent=None, title=title, size=(800,600), style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
 
         self.panel = MainPanel(self)
 
