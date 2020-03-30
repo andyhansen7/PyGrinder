@@ -9,10 +9,12 @@ A simulated mouse clicker with a clean interface and added features to help avoi
 
 """
 
+# packages
 import pynput.mouse as pymouse
 import pynput.keyboard as pykeyboard
 import wx
 
+# libraries
 import os
 import time
 import math
@@ -29,22 +31,22 @@ class MainWindow(wx.Frame):
         self.CreateStatusBar()
 
         # file menu items
-        filemenu = wx.Menu()
-        menuSaveConfig = filemenu.Append(wx.ID_SAVE, "&Save configuration", "Save the current settings as a loadable configuration")
-        menuLoadConfig = filemenu.Append(wx.ID_OPEN, "Load configuration", "Load settings from a configuration file")
-        menuAbout = filemenu.Append(wx.ID_ABOUT, "&About","Information about this program")
-        menuExit = filemenu.Append(wx.ID_EXIT,"&Exit","Terminate the program")
+        self.filemenu = wx.Menu()
+        self.menuSaveConfig = self.filemenu.Append(wx.ID_SAVE, "&Save configuration", "Save the current settings as a loadable configuration")
+        self.menuLoadConfig = self.filemenu.Append(wx.ID_OPEN, "Load configuration", "Load settings from a configuration file")
+        self.menuAbout = self.filemenu.Append(wx.ID_ABOUT, "&About","Information about this program")
+        self.menuExit = self.filemenu.Append(wx.ID_EXIT,"&Exit","Terminate the program")
 
         # file menu bar
-        menuBar = wx.MenuBar()
-        menuBar.Append(filemenu, "&File")
-        self.SetMenuBar(menuBar)
+        self.menuBar = wx.MenuBar()
+        self.menuBar.Append(self.filemenu, "&File")
+        self.SetMenuBar(self.menuBar)
 
         # menu events
-        self.Bind(wx.EVT_MENU, self.OnSave, menuSaveConfig)
-        self.Bind(wx.EVT_MENU, self.OnLoad, menuLoadConfig)
-        self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
-        self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
+        self.Bind(wx.EVT_MENU, self.OnSave, self.menuSaveConfig)
+        self.Bind(wx.EVT_MENU, self.OnLoad, self.menuLoadConfig)
+        self.Bind(wx.EVT_MENU, self.OnAbout, self.menuAbout)
+        self.Bind(wx.EVT_MENU, self.OnExit, self.menuExit)
 
         self.Center()
         self.Show(True)
@@ -69,8 +71,7 @@ class MainWindow(wx.Frame):
             except IOError:
                 dlg = wx.MessageDialog( self, "The file could not be saved.", "IOError", wx.OK)
                 dlg.ShowModal()
-                dlg.Destroy()
-            
+                dlg.Destroy()      
 
     def OnLoad(self, e):
         with wx.FileDialog(self, "Open config file", wildcard="PyGrinder files (*.pygrinder)|*.pygrinder",
