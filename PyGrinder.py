@@ -30,8 +30,10 @@ class MainWindow(wx.Frame):
 
         # file menu items
         filemenu = wx.Menu()
-        menuAbout = filemenu.Append(wx.ID_ABOUT, "&About"," Information about this program")
-        menuExit = filemenu.Append(wx.ID_EXIT,"&Exit"," Terminate the program")
+        menuSaveConfig = filemenu.Append(wx.ID_SAVE, "&Save configuration", "Save the current settings as a loadable configuration")
+        menuLoadConfig = filemenu.Append(wx.ID_OPEN, "Load configuration", "Load settings from a configuration file")
+        menuAbout = filemenu.Append(wx.ID_ABOUT, "&About","Information about this program")
+        menuExit = filemenu.Append(wx.ID_EXIT,"&Exit","Terminate the program")
 
         # file menu bar
         menuBar = wx.MenuBar()
@@ -39,6 +41,8 @@ class MainWindow(wx.Frame):
         self.SetMenuBar(menuBar)
 
         # menu events
+        self.Bind(wx.EVT_MENU, self.OnSave, menuSaveConfig)
+        self.Bind(wx.EVT_MENU, self.OnLoad, menuLoadConfig)
         self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
         self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
 
@@ -47,6 +51,37 @@ class MainWindow(wx.Frame):
 
         #self.logger.write(str(datetime.datetime.now()) + '[INIT] Frame created')
 
+    def OnSave(self, e):
+        with wx.FileDialog(self, "Save config file", wildcard="PyGrinder files (*.pygrinder)|*.pygrinder", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+
+        pathname = fileDialog.GetPath()
+        try:
+            with open(pathname, 'w') as file:
+                self.saveConfig(file)
+        except IOError:
+            dlg = wx.MessageDialog( self, "The file could not be saved.", "IOError", wx.OK)
+            dlg.ShowModal()
+            dlg.Destroy()
+            
+
+    def OnLoad(self, e):
+        with wx.FileDialog(self, "Open config file", wildcard="PyGrinder files (*.pygrinder)|*.pygrinder",
+                       style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return   
+
+            pathname = fileDialog.GetPath()
+        try:
+            with open(pathname, 'r') as file:
+                self.loadData(file)
+        except IOError:
+            dlg = wx.MessageDialog( self, "The file could not be opened.", "IOError", wx.OK)
+            dlg.ShowModal()
+            dlg.Destroy()
+
     def OnAbout(self, e):
         dlg = wx.MessageDialog( self, "A simple autoclicker for avoiding server AFK filters", "About PyClick", wx.OK)
         dlg.ShowModal()
@@ -54,6 +89,16 @@ class MainWindow(wx.Frame):
 
     def OnExit(self, e):
         self.Close(True)
+
+    def loadConfig(self, file):
+        dlg = wx.MessageDialog( self, "File loaded", "Sucess", wx.OK)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+    def saveConfig(self, file):
+        dlg = wx.MessageDialog( self, "File saved", "Sucess", wx.OK)
+        dlg.ShowModal()
+        dlg.Destroy()
 
 class MainPanel(wx.Panel):
     def __init__(self, parent):
@@ -66,7 +111,7 @@ class MainPanel(wx.Panel):
         self.mouse = pymouse.Controller()
         self.keyboard = pykeyboard.Controller()
 
-        self.logger = open("PyGrinder_log.txt", "w")
+        self.logger = open("PyGrinder.log", "w")
 
         # vars
         self.running = False
