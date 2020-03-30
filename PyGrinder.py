@@ -49,21 +49,27 @@ class MainWindow(wx.Frame):
         self.Center()
         self.Show(True)
 
-        #self.logger.write(str(datetime.datetime.now()) + '[INIT] Frame created')
+    def loadConfig(self, file):
+        self.panel.setData(file.read())
+        file.close()
+
+    def saveConfig(self, file):
+        file.write(self.panel.getData())
+        file.close()
 
     def OnSave(self, e):
         with wx.FileDialog(self, "Save config file", wildcard="PyGrinder files (*.pygrinder)|*.pygrinder", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
             if fileDialog.ShowModal() == wx.ID_CANCEL:
                 return
 
-        pathname = fileDialog.GetPath()
-        try:
-            with open(pathname, 'w') as file:
-                self.saveConfig(file)
-        except IOError:
-            dlg = wx.MessageDialog( self, "The file could not be saved.", "IOError", wx.OK)
-            dlg.ShowModal()
-            dlg.Destroy()
+            pathname = fileDialog.GetPath()
+            try:
+                with open(pathname, 'w') as file:
+                    self.saveConfig(file)
+            except IOError:
+                dlg = wx.MessageDialog( self, "The file could not be saved.", "IOError", wx.OK)
+                dlg.ShowModal()
+                dlg.Destroy()
             
 
     def OnLoad(self, e):
@@ -76,7 +82,7 @@ class MainWindow(wx.Frame):
             pathname = fileDialog.GetPath()
         try:
             with open(pathname, 'r') as file:
-                self.loadData(file)
+                self.loadConfig(file)
         except IOError:
             dlg = wx.MessageDialog( self, "The file could not be opened.", "IOError", wx.OK)
             dlg.ShowModal()
@@ -89,16 +95,6 @@ class MainWindow(wx.Frame):
 
     def OnExit(self, e):
         self.Close(True)
-
-    def loadConfig(self, file):
-        dlg = wx.MessageDialog( self, "File loaded", "Sucess", wx.OK)
-        dlg.ShowModal()
-        dlg.Destroy()
-
-    def saveConfig(self, file):
-        dlg = wx.MessageDialog( self, "File saved", "Sucess", wx.OK)
-        dlg.ShowModal()
-        dlg.Destroy()
 
 class MainPanel(wx.Panel):
     def __init__(self, parent):
@@ -116,12 +112,8 @@ class MainPanel(wx.Panel):
         # vars
         self.running = False
         self.cancelled = False
-        self.hopChecked = False
-        self.strafeChecked = False
-        self.commandChecked = False
 
         self.countdown_delay = 15
-        self.execution_delay = 30
         self.hop_delay = 60
         self.strafe_delay = 60
         self.command_delay = 120
@@ -197,16 +189,42 @@ class MainPanel(wx.Panel):
 
         self.logger.write(str(datetime.datetime.now()) + '[INIT] Panel created\n')
 
+    def setData(self, contents):
+        elements = contents.split(' ', 5)
+        commands = elements[5].split('\n', 1)
+
+        self.hopCheckBox.SetValue(bool(elements[0]))
+        if self.hopCheckBox.GetValue(): 
+            self.hopCheckBox.SetValue(True)
+            self.OnHopCheck(None)
+            self.hopTextBox.SetValue(elements[1])
+
+        self.strafeCheckBox.SetValue(bool(elements[2]))
+        if self.strafeCheckBox.GetValue():
+            self.strafeCheckBox.SetValue(True)
+            self.OnStrafeCheck(None)
+            self.strafeTextBox.SetValue(elements[3])
+
+        self.commandCheckBox.SetValue(bool(elements[4]))
+        if self.commandCheckBox.GetValue():
+            self.commandCheckBox.SetValue(True)
+            self.OnCommandCheck(None)
+            self.commandTextBox.SetValue(commands[0])
+            self.commandList.SetValue(commands[1])
+
+    def getData(self):
+        return ( str(self.hopCheckBox.GetValue()) + ' ' + (self.hopTextBox.GetValue() if self.hopCheckBox.GetValue() else str(self.hop_delay)) + ' ' + str(self.strafeCheckBox.GetValue()) + ' ' +(self.strafeTextBox.GetValue() if self.strafeCheckBox.GetValue() else str(self.strafe_delay)) + ' ' + str(self.commandCheckBox.GetValue()) + ' ' + (self.commandTextBox.GetValue() if self.commandCheckBox.GetValue() else str(self.command_delay)) + '\n' + (self.commandList.GetValue()) if self.commandCheckBox.GetValue() else '')
+
     def clickLoop(self):
         self.logger.write(str(datetime.datetime.now()) + '[INFO] Click loop began execution\n')
         # update vars from inputs
-        if self.hopChecked and len(self.hopTextBox.GetValue()) > 0: 
+        if self.hopCheckBox.GetValue() and len(self.hopTextBox.GetValue()) > 0: 
             self.hop_delay = int(self.hopTextBox.GetValue())
             self.logger.write(str(datetime.datetime.now()) + '[INFO] Hop delay set to ' + str(self.hop_delay) + '\n')
-        if self.strafeChecked and len(self.strafeTextBox.GetValue()) > 0: 
+        if self.strafeCheckBox.GetValue() and len(self.strafeTextBox.GetValue()) > 0: 
             self.strafe_delay = int(self.strafeTextBox.GetValue())
             self.logger.write(str(datetime.datetime.now()) + '[INFO] strafe delay set to ' + str(self.strafe_delay) + '\n')
-        if self.commandChecked and len(self.commandTextBox.GetValue()) and len(self.commandList.GetValue()) > 0: 
+        if self.commandCheckBox.GetValue() and len(self.commandTextBox.GetValue()) and len(self.commandList.GetValue()) > 0: 
             self.command_delay = int(self.commandTextBox.GetValue())
             self.logger.write(str(datetime.datetime.now()) + '[INFO] Command delay set to ' + str(self.command_delay) + '\n')
             self.logger.write(str(datetime.datetime.now()) + '[INFO] Commands being run:\n')
@@ -244,7 +262,7 @@ class MainPanel(wx.Panel):
                 if self.cancelled: break
 
                 # hop implementation
-                if self.hopChecked and self.loop % (self.hop_delay * 100) == 0:
+                if self.hopCheckBox.GetValue() and self.loop % (self.hop_delay * 100) == 0:
                     self.logger.write(str(datetime.datetime.now()) + '[INFO] Performed hop\n')
                     self.mouse.release(pymouse.Button.left)
                     time.sleep(0.25)
@@ -255,7 +273,7 @@ class MainPanel(wx.Panel):
                     self.mouse.press(pymouse.Button.left)
 
                 # strafe implementation
-                if self.strafeChecked and self.loop % (self.strafe_delay * 100) == 0:
+                if self.strafeCheckBox.GetValue() and self.loop % (self.strafe_delay * 100) == 0:
                     self.logger.write(str(datetime.datetime.now()) + '[INFO] Performed strafe\n')
                     self.mouse.release(pymouse.Button.left)
                     time.sleep(0.25)
@@ -272,7 +290,7 @@ class MainPanel(wx.Panel):
                     self.mouse.press(pymouse.Button.left)
 
                 # command implementation
-                if self.commandChecked and self.loop % (self.command_delay * 100) == 0:
+                if self.commandCheckBox.GetValue() and self.loop % (self.command_delay * 100) == 0:
                     self.logger.write(str(datetime.datetime.now()) + '[INFO] Ran commands\n')
 
                     self.mouse.release(pymouse.Button.left)
@@ -322,7 +340,7 @@ class MainPanel(wx.Panel):
         self.logger.write(str(datetime.datetime.now()) + '[INFO] Stop button pressed\n')
 
     def OnHopCheck(self, e):
-        if not self.hopChecked:
+        if self.hopCheckBox.GetValue():
             self.hopTextBox = wx.TextCtrl(self, name="Hop Delay")
             self.hopTextBox.SetSize(350, 300, 100, 20)
             self.mainSizer.Add(self.hopTextBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
@@ -330,18 +348,15 @@ class MainPanel(wx.Panel):
             self.hopLabel = wx.StaticText(self, label="Hop interval (seconds):", style=wx.ALIGN_RIGHT)
             self.hopLabel.SetPosition((225, 300))
             self.mainSizer.Add(self.hopLabel, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
-
-            self.hopChecked = True
         
         else:
             self.hopTextBox.Destroy()
             self.hopLabel.Destroy()
-            self.hopChecked = False
 
         self.logger.write(str(datetime.datetime.now()) + '[INFO] Hop button checked\n')
 
     def OnStrafeCheck(self, e):
-        if not self.strafeChecked:
+        if self.strafeCheckBox.GetValue():
             self.strafeTextBox = wx.TextCtrl(self, name="Strafe Delay")
             self.strafeTextBox.SetSize(350, 330, 100, 20)
             self.mainSizer.Add(self.strafeTextBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
@@ -350,17 +365,14 @@ class MainPanel(wx.Panel):
             self.strafeLabel.SetPosition((218, 330))
             self.mainSizer.Add(self.strafeLabel, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
-            self.strafeChecked = True
-
         else:
             self.strafeTextBox.Destroy()
             self.strafeLabel.Destroy()
-            self.strafeChecked = False
 
         self.logger.write(str(datetime.datetime.now()) + '[INFO] Strafe button checked\n')
 
     def OnCommandCheck(self, e):
-        if not self.commandChecked:
+        if self.commandCheckBox.GetValue():
             self.commandList = wx.TextCtrl(self, name="Command List", style=wx.TE_MULTILINE)
             self.commandList.SetSize(20, 400, 200, 100)
             self.mainSizer.Add(self.commandList, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
@@ -372,14 +384,11 @@ class MainPanel(wx.Panel):
             self.commandLabel = wx.StaticText(self, label="Command interval (seconds):", style=wx.ALIGN_RIGHT)
             self.commandLabel.SetPosition((190, 360))
             self.mainSizer.Add(self.commandLabel, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
-
-            self.commandChecked = True
             
         else:
             self.commandList.Destroy()
             self.commandTextBox.Destroy()
             self.commandLabel.Destroy()
-            self.commandChecked = False
 
         self.logger.write(str(datetime.datetime.now()) + '[INFO] Command button checked\n')
 
