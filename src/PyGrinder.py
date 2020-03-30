@@ -118,6 +118,20 @@ class MainPanel(wx.Panel):
         self.hop_delay = 60
         self.strafe_delay = 60
         self.command_delay = 120
+        
+        self.hop_time_1 = 0.25
+        self.hop_time_2 = 0.1
+        self.hop_time_3 = 0.25
+        
+        self.strafe_time_1 = 0.05
+        self.strafe_time_2 = 0.05
+        self.strafe_time_3 = 0.08
+        self.strafe_time_4 = 0.10
+        
+        self.keypress_time_1 = 0.05
+        self.keypress_time_2 = 0.05
+        self.enter_time_1 = 0.05
+        self.enter_time_2 = 0.45
 
         self.SetBackgroundColour("steel blue")
 
@@ -266,12 +280,14 @@ class MainPanel(wx.Panel):
                 if self.hopCheckBox.GetValue() and self.loop % (self.hop_delay * 100) == 0:
                     self.logger.write(str(datetime.datetime.now()) + '[INFO] Performed hop\n')
                     self.mouse.release(pymouse.Button.left)
-                    time.sleep(0.25)
+                    time.sleep(self.hop_time_1)
                     self.keyboard.press(pykeyboard.Key.space)
-                    time.sleep(0.1)
+                    time.sleep(self.hop_time_2)
                     self.keyboard.release(pykeyboard.Key.space)
-                    time.sleep(0.25)
+                    time.sleep(self.hop_time_3)
                     self.mouse.press(pymouse.Button.left)
+                    
+                    i += 100 * (self.hop_time_1 + self.hop_time_2 + self.hop_time_3)
 
                 # strafe implementation
                 if self.strafeCheckBox.GetValue() and self.loop % (self.strafe_delay * 100) == 0:
@@ -280,15 +296,17 @@ class MainPanel(wx.Panel):
                     time.sleep(0.25)
                     
                     self.keyboard.press('s')
-                    time.sleep(.05)
+                    time.sleep(self.strafe_time_1)
                     self.keyboard.release('s')
-                    time.sleep(.05)
+                    time.sleep(self.strafe_time_2)
                     self.keyboard.press('w')
-                    time.sleep(.08)
+                    time.sleep(self.strafe_time_3)
                     self.keyboard.release('w')
-                    time.sleep(.1)
+                    time.sleep(self.strafe_time_4)
         
                     self.mouse.press(pymouse.Button.left)
+                    
+                    i += 100 * (self.strafe_time_1 + self.strafe_time_2 + self.strafe_time_3 + self.strafe_time_4)
 
                 # command implementation
                 if self.commandCheckBox.GetValue() and self.loop % (self.command_delay * 100) == 0:
@@ -300,19 +318,26 @@ class MainPanel(wx.Panel):
                     for character in (self.commandList.GetValue() if self.commandList.GetValue()[-1] != '\n' else self.commandList.GetValue()[:-1]):
                         if character == '\n':
                             self.keyboard.press(pykeyboard.Key.enter)
-                            time.sleep(0.05)
+                            time.sleep(self.enter_time_1)
                             self.keyboard.release(pykeyboard.Key.enter)
-                            time.sleep(0.45)
+                            time.sleep(self.enter_time_2)
+                            
+                            i += 100 * (self.enter_time_1 + self.enter_time_2)
+                            
                         else:
                             self.keyboard.press(character)
-                            time.sleep(.05)
+                            time.sleep(self.keypress_time_1)
                             self.keyboard.release(character)
-                            time.sleep(.05)
+                            time.sleep(self.keypress_time_2)
+                            
+                            i += 100 * (self.keypress_time_1 + self.keypress_time_2)
 
                     self.keyboard.press(pykeyboard.Key.enter)
-                    time.sleep(0.05)
+                    time.sleep(self.enter_time_1)
                     self.keyboard.release(pykeyboard.Key.enter)
-                    time.sleep(0.45)
+                    time.sleep(self.enter_time_2)
+                    
+                    i += 100 * (self.enter_time_1 + self.enter_time_2)
 
                     self.mouse.press(pymouse.Button.left)
 
