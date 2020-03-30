@@ -1,2 +1,7 @@
 *.txt
 *.log
+*.spec
+build/
+dist/
+__pycache__/
+
