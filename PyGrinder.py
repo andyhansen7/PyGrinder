@@ -72,13 +72,13 @@ class MainPanel(wx.Panel):
         self.running = False
         self.cancelled = False
         self.hopChecked = False
-        self.jiggleChecked = False
+        self.strafeChecked = False
         self.commandChecked = False
 
         self.countdown_delay = 15
         self.execution_delay = 30
         self.hop_delay = 60
-        self.jiggle_delay = 60
+        self.strafe_delay = 60
         self.command_delay = 120
 
         self.SetBackgroundColour("steel blue")
@@ -132,10 +132,10 @@ class MainPanel(wx.Panel):
         self.hopCheckBox.SetPosition((20,300))
         self.mainSizer.Add(self.hopCheckBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
-        # mouse jiggler
-        self.mouseJiggleCheckBox = wx.CheckBox(self, label="Add mouse jiggle")
-        self.mouseJiggleCheckBox.SetPosition((20,330))
-        self.mainSizer.Add(self.mouseJiggleCheckBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
+        # strafer
+        self.strafeCheckBox = wx.CheckBox(self, label="Add strafe")
+        self.strafeCheckBox.SetPosition((20,330))
+        self.mainSizer.Add(self.strafeCheckBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
         # command sender
         self.commandCheckBox = wx.CheckBox(self, label="Add periodic commands")
@@ -147,7 +147,7 @@ class MainPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.OnStopClick, self.stopButton)
 
         self.Bind(wx.EVT_CHECKBOX, self.OnHopCheck, self.hopCheckBox)
-        self.Bind(wx.EVT_CHECKBOX, self.OnMouseJiggleCheck, self.mouseJiggleCheckBox)
+        self.Bind(wx.EVT_CHECKBOX, self.OnStrafeCheck, self.strafeCheckBox)
         self.Bind(wx.EVT_CHECKBOX, self.OnCommandCheck, self.commandCheckBox)
 
         self.logger.write(str(datetime.datetime.now()) + '[INIT] Panel created\n')
@@ -158,9 +158,9 @@ class MainPanel(wx.Panel):
         if self.hopChecked and len(self.hopTextBox.GetValue()) > 0: 
             self.hop_delay = int(self.hopTextBox.GetValue())
             self.logger.write(str(datetime.datetime.now()) + '[INFO] Hop delay set to ' + str(self.hop_delay) + '\n')
-        if self.jiggleChecked and len(self.jiggleTextBox.GetValue()) > 0: 
-            self.jiggle_delay = int(self.jiggleTextBox.GetValue())
-            self.logger.write(str(datetime.datetime.now()) + '[INFO] Jiggle delay set to ' + str(self.jiggle_delay) + '\n')
+        if self.strafeChecked and len(self.strafeTextBox.GetValue()) > 0: 
+            self.strafe_delay = int(self.strafeTextBox.GetValue())
+            self.logger.write(str(datetime.datetime.now()) + '[INFO] strafe delay set to ' + str(self.strafe_delay) + '\n')
         if self.commandChecked and len(self.commandTextBox.GetValue()) and len(self.commandList.GetValue()) > 0: 
             self.command_delay = int(self.commandTextBox.GetValue())
             self.logger.write(str(datetime.datetime.now()) + '[INFO] Command delay set to ' + str(self.command_delay) + '\n')
@@ -209,17 +209,21 @@ class MainPanel(wx.Panel):
                     time.sleep(0.25)
                     self.mouse.press(pymouse.Button.left)
 
-                # jiggle implementation
-                if self.jiggleChecked and self.loop % (self.jiggle_delay * 100) == 0:
-                    self.logger.write(str(datetime.datetime.now()) + '[INFO] Performed jiggle\n')
+                # strafe implementation
+                if self.strafeChecked and self.loop % (self.strafe_delay * 100) == 0:
+                    self.logger.write(str(datetime.datetime.now()) + '[INFO] Performed strafe\n')
                     self.mouse.release(pymouse.Button.left)
                     time.sleep(0.25)
-                    deltaX = random.randint(-100, 100)
-                    deltaY = random.randint(-100, 100)
-                    self.mouse.move(deltaX, deltaY)
-                    time.sleep(0.1)
-                    self.mouse.move(-deltaX, -deltaY)
-                    time.sleep(0.25)
+                    
+                    self.keyboard.press('s')
+                    time.sleep(.05)
+                    self.keyboard.release('s')
+                    time.sleep(.05)
+                    self.keyboard.press('w')
+                    time.sleep(.08)
+                    self.keyboard.release('w')
+                    time.sleep(.1)
+        
                     self.mouse.press(pymouse.Button.left)
 
                 # command implementation
@@ -291,24 +295,24 @@ class MainPanel(wx.Panel):
 
         self.logger.write(str(datetime.datetime.now()) + '[INFO] Hop button checked\n')
 
-    def OnMouseJiggleCheck(self, e):
-        if not self.jiggleChecked:
-            self.jiggleTextBox = wx.TextCtrl(self, name="Jiggle Delay")
-            self.jiggleTextBox.SetSize(350, 330, 100, 20)
-            self.mainSizer.Add(self.jiggleTextBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
+    def OnStrafeCheck(self, e):
+        if not self.strafeChecked:
+            self.strafeTextBox = wx.TextCtrl(self, name="Strafe Delay")
+            self.strafeTextBox.SetSize(350, 330, 100, 20)
+            self.mainSizer.Add(self.strafeTextBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
-            self.jiggleLabel = wx.StaticText(self, label="Jiggle interval (seconds):", style=wx.ALIGN_RIGHT)
-            self.jiggleLabel.SetPosition((218, 330))
-            self.mainSizer.Add(self.jiggleLabel, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
+            self.strafeLabel = wx.StaticText(self, label="Strafe interval (seconds):", style=wx.ALIGN_RIGHT)
+            self.strafeLabel.SetPosition((218, 330))
+            self.mainSizer.Add(self.strafeLabel, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
-            self.jiggleChecked = True
+            self.strafeChecked = True
 
         else:
-            self.jiggleTextBox.Destroy()
-            self.jiggleLabel.Destroy()
-            self.jiggleChecked = False
+            self.strafeTextBox.Destroy()
+            self.strafeLabel.Destroy()
+            self.strafeChecked = False
 
-        self.logger.write(str(datetime.datetime.now()) + '[INFO] Jiggle button checked\n')
+        self.logger.write(str(datetime.datetime.now()) + '[INFO] Strafe button checked\n')
 
     def OnCommandCheck(self, e):
         if not self.commandChecked:
