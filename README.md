@@ -2,14 +2,13 @@
 A simple Python-based clicker with added features, developed for grinding cobblestone generators on Minecraft servers.
 
 <h3>Installation instructions</h3>
-Executable .exe files will be coming soon. In the meantime, to run PyGrinder yourself:
+All you need to do to run PyGrinder is clone this project and run the executable. (PyGrinder.exe) Or, if you're feeling adventurous and want to compile PyGrinder yourself, follow the instructions below:
 <ol>
-    <li>Install Python 3</li>
-    <li>Run the following command: pip install pynput</li>
-    <li>Run the following command: pip install -U wxPython
     <li>Clone the project</li>
-    <li>Run the command python ./PyGrinder.py in the dierectory to start the program</li>
+    <li>Install Python 3</li>
+    <li>Run the BATCH file compiler.bat in the src folder</li>
 </ol>
+Your executable will replace the PyGrinder.exe already in the directory
 
 <h3>Usage</h3>
 
