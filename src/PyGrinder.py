@@ -120,6 +120,7 @@ class MainPanel(wx.Panel):
         self.command_delay = 120
         
         self.clickloop_delay = 0.01
+        self.start_pause = 0.25
         
         self.hop_time_1 = 0.25
         self.hop_time_2 = 0.1
@@ -295,7 +296,7 @@ class MainPanel(wx.Panel):
                 if self.strafeCheckBox.GetValue() and self.loop % (self.strafe_delay * 100) == 0:
                     self.logger.write(str(datetime.datetime.now()) + '[INFO] Performed strafe\n')
                     self.mouse.release(pymouse.Button.left)
-                    timerSleep(0.25)
+                    self.timerSleep(self.start_pause)
                     
                     self.keyboard.press('s')
                     self.timerSleep(self.strafe_time_1)
@@ -305,17 +306,20 @@ class MainPanel(wx.Panel):
                     self.timerSleep(self.strafe_time_3)
                     self.keyboard.release('w')
                     self.timerSleep(self.strafe_time_4)
-        
+
                     self.mouse.press(pymouse.Button.left)
 
                 # command implementation
                 if self.commandCheckBox.GetValue() and self.loop % (self.command_delay * 100) == 0:
-                    self.logger.write(str(datetime.datetime.now()) + '[INFO] Ran commands\n')
+                    self.logger.write(str(datetime.datetime.now()) + '[INFO] Ran following commands:\n')
 
                     self.mouse.release(pymouse.Button.left)
-                    timerSleep(self.keypress_time_1)
+                    self.timerSleep(self.start_pause)
+                    
+                    commands = self.commandList.GetValue()
+                    if commands[-1] != '\n': commands += '\n' 
 
-                    for character in (self.commandList.GetValue() if self.commandList.GetValue()[-1] != '\n' else self.commandList.GetValue()[:-1]):
+                    for character in commands:
                         if character == '\n':
                             self.keyboard.press(pykeyboard.Key.enter)
                             self.timerSleep(self.enter_time_1)
@@ -328,10 +332,7 @@ class MainPanel(wx.Panel):
                             self.keyboard.release(character)
                             self.timerSleep(self.keypress_time_2)
 
-                    self.keyboard.press(pykeyboard.Key.enter)
-                    self.timerSleep(self.enter_time_1)
-                    self.keyboard.release(pykeyboard.Key.enter)
-                    self.timerSleep(self.enter_time_2)
+                    self.timerSleep(self.start_pause)
 
                     self.mouse.press(pymouse.Button.left)
 
