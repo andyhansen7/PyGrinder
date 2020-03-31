@@ -1,6 +1,8 @@
 <h1> PyGrinder </h1>
 A simple Python-based clicker with added features, developed for grinding cobblestone generators on Minecraft servers.
 
+<h3 style="color: red; font-weight: bold;">Warning: This program is only compatible with certain versions of Minecraft: Java Edition. The latest compatible version is 1.12.2, but more versions will be tested soon. Any version of Minecraft: Windows 10 Edition is supported.</h3>
+
 <h3>Installation instructions</h3>
 All you need to do to run PyGrinder is clone this project and run the executable. (PyGrinder.exe) Or, if you're feeling adventurous and want to compile PyGrinder yourself, follow the instructions below:
 <ol>
