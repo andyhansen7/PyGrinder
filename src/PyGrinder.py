@@ -119,6 +119,8 @@ class MainPanel(wx.Panel):
         self.strafe_delay = 60
         self.command_delay = 120
         
+        self.clickloop_delay = 0.01
+        
         self.hop_time_1 = 0.25
         self.hop_time_2 = 0.1
         self.hop_time_3 = 0.25
@@ -230,6 +232,13 @@ class MainPanel(wx.Panel):
     def getData(self):
         return ( str(self.hopCheckBox.GetValue()) + ' ' + (self.hopTextBox.GetValue() if self.hopCheckBox.GetValue() else str(self.hop_delay)) + ' ' + str(self.strafeCheckBox.GetValue()) + ' ' +(self.strafeTextBox.GetValue() if self.strafeCheckBox.GetValue() else str(self.strafe_delay)) + ' ' + str(self.commandCheckBox.GetValue()) + ' ' + (self.commandTextBox.GetValue() if self.commandCheckBox.GetValue() else str(self.command_delay)) + '\n' + (self.commandList.GetValue()) if self.commandCheckBox.GetValue() else '')
 
+    def timerSleep(self, delay):
+        for i in range(0, int(100 * delay)):
+            time.sleep(0.01)
+            self.loop += 1
+            
+            self.timer.SetValue((str((math.trunc(self.loop / 6000) % 60)) if (math.trunc(self.loop / 6000) % 60) > 10 else ('0' + str(math.trunc(self.loop / 6000) % 60))) + ':' + (str((self.loop % 6000) / 100) if (self.loop % 6000) / 100 > 10 else '0' + str((self.loop % 6000) / 100)))
+            
     def clickLoop(self):
         self.logger.write(str(datetime.datetime.now()) + '[INFO] Click loop began execution\n')
         # update vars from inputs
@@ -269,7 +278,7 @@ class MainPanel(wx.Panel):
 
             # main loop
             while True:
-                self.loop += 1
+                #self.loop += 1
 
                 #self.logger.write(str(datetime.datetime.now()) + '[INFO] Loop ' + str(self.loop) + '\n')
 
@@ -280,70 +289,68 @@ class MainPanel(wx.Panel):
                 if self.hopCheckBox.GetValue() and self.loop % (self.hop_delay * 100) == 0:
                     self.logger.write(str(datetime.datetime.now()) + '[INFO] Performed hop\n')
                     self.mouse.release(pymouse.Button.left)
-                    time.sleep(self.hop_time_1)
+                    self.timerSleep(self.hop_time_1)
                     self.keyboard.press(pykeyboard.Key.space)
-                    time.sleep(self.hop_time_2)
+                    self.timerSleep(self.hop_time_2)
                     self.keyboard.release(pykeyboard.Key.space)
-                    time.sleep(self.hop_time_3)
+                    self.timerSleep(self.hop_time_3)
                     self.mouse.press(pymouse.Button.left)
                     
-                    i += 100 * (self.hop_time_1 + self.hop_time_2 + self.hop_time_3)
+                    #i += 100 * (self.hop_time_1 + self.hop_time_2 + self.hop_time_3)
 
                 # strafe implementation
                 if self.strafeCheckBox.GetValue() and self.loop % (self.strafe_delay * 100) == 0:
                     self.logger.write(str(datetime.datetime.now()) + '[INFO] Performed strafe\n')
                     self.mouse.release(pymouse.Button.left)
-                    time.sleep(0.25)
+                    timerSleep(0.25)
                     
                     self.keyboard.press('s')
-                    time.sleep(self.strafe_time_1)
+                    self.timerSleep(self.strafe_time_1)
                     self.keyboard.release('s')
-                    time.sleep(self.strafe_time_2)
+                    self.timerSleep(self.strafe_time_2)
                     self.keyboard.press('w')
-                    time.sleep(self.strafe_time_3)
+                    self.timerSleep(self.strafe_time_3)
                     self.keyboard.release('w')
-                    time.sleep(self.strafe_time_4)
+                    self.timerSleep(self.strafe_time_4)
         
                     self.mouse.press(pymouse.Button.left)
                     
-                    i += 100 * (self.strafe_time_1 + self.strafe_time_2 + self.strafe_time_3 + self.strafe_time_4)
+                   # i += 100 * (self.strafe_time_1 + self.strafe_time_2 + self.strafe_time_3 + self.strafe_time_4)
 
                 # command implementation
                 if self.commandCheckBox.GetValue() and self.loop % (self.command_delay * 100) == 0:
                     self.logger.write(str(datetime.datetime.now()) + '[INFO] Ran commands\n')
 
                     self.mouse.release(pymouse.Button.left)
-                    time.sleep(0.1)
+                    timerSleep(self.keypress_time_1)
 
                     for character in (self.commandList.GetValue() if self.commandList.GetValue()[-1] != '\n' else self.commandList.GetValue()[:-1]):
                         if character == '\n':
                             self.keyboard.press(pykeyboard.Key.enter)
-                            time.sleep(self.enter_time_1)
+                            self.timerSleep(self.enter_time_1)
                             self.keyboard.release(pykeyboard.Key.enter)
-                            time.sleep(self.enter_time_2)
+                            self.timerSleep(self.enter_time_2)
                             
-                            i += 100 * (self.enter_time_1 + self.enter_time_2)
+                            #i += 100 * (self.enter_time_1 + self.enter_time_2)
                             
                         else:
                             self.keyboard.press(character)
-                            time.sleep(self.keypress_time_1)
+                            self.timerSleep(self.keypress_time_1)
                             self.keyboard.release(character)
-                            time.sleep(self.keypress_time_2)
+                            self.timerSleep(self.keypress_time_2)
                             
-                            i += 100 * (self.keypress_time_1 + self.keypress_time_2)
+                            #i += 100 * (self.keypress_time_1 + self.keypress_time_2)
 
                     self.keyboard.press(pykeyboard.Key.enter)
-                    time.sleep(self.enter_time_1)
+                    self.timerSleep(self.enter_time_1)
                     self.keyboard.release(pykeyboard.Key.enter)
-                    time.sleep(self.enter_time_2)
+                    self.timerSleep(self.enter_time_2)
                     
-                    i += 100 * (self.enter_time_1 + self.enter_time_2)
+                    #i += 100 * (self.enter_time_1 + self.enter_time_2)
 
                     self.mouse.press(pymouse.Button.left)
 
-                self.timer.SetValue(str(math.trunc(self.loop / 6000) % 60) + ':' + (str((self.loop % 6000) / 100) if (self.loop % 6000) / 100 > 10 else '0' + str((self.loop % 6000) / 100)))
-
-                time.sleep(0.01)
+                self.timerSleep(self.clickloop_delay)
         
         self.mouse.release(pymouse.Button.left)
 
