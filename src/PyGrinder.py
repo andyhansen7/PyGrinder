@@ -118,10 +118,12 @@ class MainPanel(wx.Panel):
         self.executeStrafe = False
         self.executeCommand = False
 
-        self.countdown_delay = 15
-        self.hop_delay = 60
-        self.strafe_delay = 60
-        self.command_delay = 120
+        self.command_list_text = ''
+
+        self.countdown_delay = 15.0
+        self.hop_delay = 60.0
+        self.strafe_delay = 60.0
+        self.command_delay = 120.0
         
         self.clickloop_delay = 0.01
         self.start_pause = 0.25
@@ -235,7 +237,7 @@ class MainPanel(wx.Panel):
             self.commandList.SetValue(commands[1])
 
     def getData(self):
-        return ( str(self.hopCheckBox.GetValue()) + ' ' + (self.hopTextBox.GetValue() if self.hopCheckBox.GetValue() else str(self.hop_delay)) + ' ' + str(self.strafeCheckBox.GetValue()) + ' ' +(self.strafeTextBox.GetValue() if self.strafeCheckBox.GetValue() else str(self.strafe_delay)) + ' ' + str(self.commandCheckBox.GetValue()) + ' ' + (self.commandTextBox.GetValue() if self.commandCheckBox.GetValue() else str(self.command_delay)) + '\n' + (self.commandList.GetValue()) if self.commandCheckBox.GetValue() else '')
+        return ( str(self.hopCheckBox.GetValue()) + ' ' + str(self.hop_delay) + ' ' + str(self.strafeCheckBox.GetValue()) + ' ' + str(self.strafe_delay) + ' ' + str(self.commandCheckBox.GetValue()) + ' ' + str(self.command_delay) + '\n' + self.command_list_text)
 
     def timerSleep(self, delay):
         for i in range(0, int(100 * delay)):
@@ -253,25 +255,25 @@ class MainPanel(wx.Panel):
             
     def clickLoop(self):
         self.logger.write(str(datetime.datetime.now()) + '[INFO] Click loop began execution\n')
-        # update vars from inputs
-        if self.hopCheckBox.GetValue() and len(self.hopTextBox.GetValue()) > 0: 
-            self.hop_delay = int(self.hopTextBox.GetValue())
+
+        # log vars from inputs
+        if self.hopCheckBox.GetValue(): 
             self.logger.write(str(datetime.datetime.now()) + '[INFO] Hop delay set to ' + str(self.hop_delay) + '\n')
-        if self.strafeCheckBox.GetValue() and len(self.strafeTextBox.GetValue()) > 0: 
-            self.strafe_delay = int(self.strafeTextBox.GetValue())
-            self.logger.write(str(datetime.datetime.now()) + '[INFO] strafe delay set to ' + str(self.strafe_delay) + '\n')
-        if self.commandCheckBox.GetValue() and len(self.commandTextBox.GetValue()) and len(self.commandList.GetValue()) > 0: 
-            self.command_delay = int(self.commandTextBox.GetValue())
+
+        if self.strafeCheckBox.GetValue(): 
+            self.logger.write(str(datetime.datetime.now()) + '[INFO] Strafe delay set to ' + str(self.strafe_delay) + '\n')
+
+        if self.commandCheckBox.GetValue(): 
             self.logger.write(str(datetime.datetime.now()) + '[INFO] Command delay set to ' + str(self.command_delay) + '\n')
             self.logger.write(str(datetime.datetime.now()) + '[INFO] Commands being run:\n')
-            for c in self.commandList.GetValue().split('\n'):
+            for c in self.command_list_text.split('\n'):
                 self.logger.write(c + '\n')
 
         # countdown to execution
         self.timer.SetForegroundColour('red')
         self.timerLabel.SetLabel('Countdown:')
 
-        for i in range(0, 100 * self.countdown_delay):
+        for i in range(0, int(100 * self.countdown_delay)):
             if self.cancelled: break
             self.timer.SetLabel('00:' + (str(round(self.countdown_delay - ((i + 1) / 100), 2) if self.countdown_delay - (i + 1) / 100 > 10 else '0' + str(round(self.countdown_delay - ((i + 1) / 100), 2)))))
             time.sleep(0.01)
@@ -338,7 +340,7 @@ class MainPanel(wx.Panel):
                             self.keyboard.press(pykeyboard.Key.enter)
                             self.timerSleep(self.enter_time_1)
                             self.keyboard.release(pykeyboard.Key.enter)
-                            self.timerSleep(self.enter_time_2)
+                            self.timerSleep(self.enter_time_2) 
                             
                         else:
                             self.keyboard.press(character)
@@ -383,6 +385,8 @@ class MainPanel(wx.Panel):
             self.hopLabel.SetPosition((225, 300))
             self.mainSizer.Add(self.hopLabel, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
         
+            self.Bind(wx.EVT_TEXT, self.OnHopTextBoxText, self.hopTextBox)
+
         else:
             self.hopTextBox.Destroy()
             self.hopLabel.Destroy()
@@ -398,6 +402,8 @@ class MainPanel(wx.Panel):
             self.strafeLabel = wx.StaticText(self, label="Strafe interval (seconds):", style=wx.ALIGN_RIGHT)
             self.strafeLabel.SetPosition((218, 330))
             self.mainSizer.Add(self.strafeLabel, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
+
+            self.Bind(wx.EVT_TEXT, self.OnStrafeTextBoxText, self.strafeTextBox)
 
         else:
             self.strafeTextBox.Destroy()
@@ -418,6 +424,9 @@ class MainPanel(wx.Panel):
             self.commandLabel = wx.StaticText(self, label="Command interval (seconds):", style=wx.ALIGN_RIGHT)
             self.commandLabel.SetPosition((190, 360))
             self.mainSizer.Add(self.commandLabel, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
+
+            self.Bind(wx.EVT_TEXT, self.OnCommandListText, self.commandList)
+            self.Bind(wx.EVT_TEXT, self.OnCommandTextBoxText, self.commandTextBox)
             
         else:
             self.commandList.Destroy()
@@ -425,6 +434,16 @@ class MainPanel(wx.Panel):
             self.commandLabel.Destroy()
 
         self.logger.write(str(datetime.datetime.now()) + '[INFO] Command button checked\n')
+
+    # text change monitors
+    def OnHopTextBoxText(self, e):
+        self.hop_delay = float(self.hopTextBox.GetValue())
+    def OnStrafeTextBoxText(self, e):
+        self.strafe_delay = float(self.strafeTextBox.GetValue())
+    def OnCommandListText(self, e): 
+        self.command_list_text = self.commandList.GetValue()
+    def OnCommandTextBoxText(self, e):
+        self.command_delay = float(self.commandTextBox.GetValue())
 
 app = wx.App(False)
 frame = MainWindow("PyGrinder by Andy Hansen")
