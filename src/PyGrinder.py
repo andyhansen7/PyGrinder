@@ -260,7 +260,6 @@ class MainPanel(wx.Panel):
         self.timerLabel.SetLabel('Countdown:')
 
         for i in range(0, 100 * self.countdown_delay):
-            #self.logger.write(str(datetime.datetime.now()) + '[INFO] Finished countdown loop ' + str(i) + ' of ' + str(10 * self.countdown_delay) + '\n')
             if self.cancelled: break
             self.timer.SetLabel('00:' + (str(round(self.countdown_delay - ((i + 1) / 100), 2) if self.countdown_delay - (i + 1) / 100 > 10 else '0' + str(round(self.countdown_delay - ((i + 1) / 100), 2)))))
             time.sleep(0.01)
@@ -278,10 +277,6 @@ class MainPanel(wx.Panel):
 
             # main loop
             while True:
-                #self.loop += 1
-
-                #self.logger.write(str(datetime.datetime.now()) + '[INFO] Loop ' + str(self.loop) + '\n')
-
                 # check whether operation has been cancelled
                 if self.cancelled: break
 
@@ -295,8 +290,6 @@ class MainPanel(wx.Panel):
                     self.keyboard.release(pykeyboard.Key.space)
                     self.timerSleep(self.hop_time_3)
                     self.mouse.press(pymouse.Button.left)
-                    
-                    #i += 100 * (self.hop_time_1 + self.hop_time_2 + self.hop_time_3)
 
                 # strafe implementation
                 if self.strafeCheckBox.GetValue() and self.loop % (self.strafe_delay * 100) == 0:
@@ -314,8 +307,6 @@ class MainPanel(wx.Panel):
                     self.timerSleep(self.strafe_time_4)
         
                     self.mouse.press(pymouse.Button.left)
-                    
-                   # i += 100 * (self.strafe_time_1 + self.strafe_time_2 + self.strafe_time_3 + self.strafe_time_4)
 
                 # command implementation
                 if self.commandCheckBox.GetValue() and self.loop % (self.command_delay * 100) == 0:
@@ -331,22 +322,16 @@ class MainPanel(wx.Panel):
                             self.keyboard.release(pykeyboard.Key.enter)
                             self.timerSleep(self.enter_time_2)
                             
-                            #i += 100 * (self.enter_time_1 + self.enter_time_2)
-                            
                         else:
                             self.keyboard.press(character)
                             self.timerSleep(self.keypress_time_1)
                             self.keyboard.release(character)
                             self.timerSleep(self.keypress_time_2)
-                            
-                            #i += 100 * (self.keypress_time_1 + self.keypress_time_2)
 
                     self.keyboard.press(pykeyboard.Key.enter)
                     self.timerSleep(self.enter_time_1)
                     self.keyboard.release(pykeyboard.Key.enter)
                     self.timerSleep(self.enter_time_2)
-                    
-                    #i += 100 * (self.enter_time_1 + self.enter_time_2)
 
                     self.mouse.press(pymouse.Button.left)
 
