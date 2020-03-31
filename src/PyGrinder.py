@@ -113,6 +113,10 @@ class MainPanel(wx.Panel):
         # vars
         self.running = False
         self.cancelled = False
+        
+        self.executeHop = False
+        self.executeStrafe = False
+        self.executeCommand = False
 
         self.countdown_delay = 15
         self.hop_delay = 60
@@ -238,6 +242,13 @@ class MainPanel(wx.Panel):
             time.sleep(0.01)
             self.loop += 1
             
+            if self.loop % (self.hop_delay * 100) == 0:
+                self.executeHop = True
+            if self.loop % (self.strafe_delay * 100) == 0:
+                self.executeStrafe = True
+            if self.loop % (self.command_delay * 100) == 0:
+                self.executeCommand = True
+            
             self.timer.SetValue((str((math.trunc(self.loop / 6000) % 60)) if (math.trunc(self.loop / 6000) % 60) > 10 else ('0' + str(math.trunc(self.loop / 6000) % 60))) + ':' + (str((self.loop % 6000) / 100) if (self.loop % 6000) / 100 > 10 else '0' + str((self.loop % 6000) / 100)))
             
     def clickLoop(self):
@@ -282,7 +293,7 @@ class MainPanel(wx.Panel):
                 if self.cancelled: break
 
                 # hop implementation
-                if self.hopCheckBox.GetValue() and self.loop % (self.hop_delay * 100) == 0:
+                if self.hopCheckBox.GetValue() and self.executeHop:
                     self.logger.write(str(datetime.datetime.now()) + '[INFO] Performed hop\n')
                     self.mouse.release(pymouse.Button.left)
                     self.timerSleep(self.hop_time_1)
@@ -290,10 +301,12 @@ class MainPanel(wx.Panel):
                     self.timerSleep(self.hop_time_2)
                     self.keyboard.release(pykeyboard.Key.space)
                     self.timerSleep(self.hop_time_3)
-                    self.mouse.press(pymouse.Button.left)
+                    
+                    self.mouse.press(pymouse.Button.left)          
+                    self.executeHop = False
 
                 # strafe implementation
-                if self.strafeCheckBox.GetValue() and self.loop % (self.strafe_delay * 100) == 0:
+                if self.strafeCheckBox.GetValue() and self.executeStrafe:
                     self.logger.write(str(datetime.datetime.now()) + '[INFO] Performed strafe\n')
                     self.mouse.release(pymouse.Button.left)
                     self.timerSleep(self.start_pause)
@@ -308,9 +321,10 @@ class MainPanel(wx.Panel):
                     self.timerSleep(self.strafe_time_4)
 
                     self.mouse.press(pymouse.Button.left)
+                    self.executeStrafe = False
 
                 # command implementation
-                if self.commandCheckBox.GetValue() and self.loop % (self.command_delay * 100) == 0:
+                if self.commandCheckBox.GetValue() and self.executeCommand:
                     self.logger.write(str(datetime.datetime.now()) + '[INFO] Ran following commands:\n')
 
                     self.mouse.release(pymouse.Button.left)
@@ -335,6 +349,7 @@ class MainPanel(wx.Panel):
                     self.timerSleep(self.start_pause)
 
                     self.mouse.press(pymouse.Button.left)
+                    self.executeCommand = False
 
                 self.timerSleep(self.clickloop_delay)
         
