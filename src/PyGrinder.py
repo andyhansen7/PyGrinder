@@ -189,12 +189,12 @@ class MainPanel(wx.Panel):
         self.mainSizer.Add(self.stopButton, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
         # hopper
-        self.hopCheckBox = wx.CheckBox(self, label="Add periodic jump")
+        self.hopCheckBox = wx.CheckBox(self, label="Add periodic hop")
         self.hopCheckBox.SetPosition((20,300))
         self.mainSizer.Add(self.hopCheckBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
         # strafer
-        self.strafeCheckBox = wx.CheckBox(self, label="Add strafe")
+        self.strafeCheckBox = wx.CheckBox(self, label="Add periodic strafe")
         self.strafeCheckBox.SetPosition((20,330))
         self.mainSizer.Add(self.strafeCheckBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
@@ -414,8 +414,12 @@ class MainPanel(wx.Panel):
     def OnCommandCheck(self, e):
         if self.commandCheckBox.GetValue():
             self.commandList = wx.TextCtrl(self, name="Command List", style=wx.TE_MULTILINE)
-            self.commandList.SetSize(20, 400, 200, 100)
+            self.commandList.SetSize(20, 410, 200, 100)
             self.mainSizer.Add(self.commandList, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
+
+            self.commandListLabel = wx.StaticText(self, label="Command list (enter on seperate lines):", style=wx.ALIGN_RIGHT)
+            self.commandListLabel.SetPosition((20, 390))
+            self.mainSizer.Add(self.commandListLabel, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
             self.commandTextBox = wx.TextCtrl(self, name="Command Delay")
             self.commandTextBox.SetSize(350, 360, 100, 20)
