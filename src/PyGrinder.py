@@ -35,7 +35,7 @@ class MainWindow(wx.Frame):
         self.menuSaveConfig = self.filemenu.Append(wx.ID_SAVE, "&Save configuration", "Save the current settings as a loadable configuration")
         self.menuLoadConfig = self.filemenu.Append(wx.ID_OPEN, "Load configuration", "Load settings from a configuration file")
         self.menuAbout = self.filemenu.Append(wx.ID_ABOUT, "&About","Information about this program")
-        self.menuAdvanced = self.filemenu.Append(wx.ID_SETUP, "&Advanced...", "Modify advanced variables")
+        self.menuReport = self.filemenu.Append(wx.ID_SETUP, "&Report Bug", "Report a bug or problem")
         self.menuExit = self.filemenu.Append(wx.ID_EXIT,"&Exit","Terminate the program")
 
         # file menu bar
@@ -47,7 +47,7 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnSave, self.menuSaveConfig)
         self.Bind(wx.EVT_MENU, self.OnLoad, self.menuLoadConfig)
         self.Bind(wx.EVT_MENU, self.OnAbout, self.menuAbout)
-        self.Bind(wx.EVT_MENU, self.OnAdvanced, self.menuAdvanced)
+        self.Bind(wx.EVT_MENU, self.OnReport, self.menuReport)
         self.Bind(wx.EVT_MENU, self.OnExit, self.menuExit)
 
         self.Center()
@@ -96,15 +96,19 @@ class MainWindow(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-    def OnAdvanced(self, e):
-        self.advancedWindow = AdvancedWindow(self)
+    def OnReport(self, e):
+        self.reportWindow = ReportWindow(parent=self, mainPanel=self.panel)
 
     def OnExit(self, e):
         self.Close(True)
 
-class AdvancedWindow(wx.Frame):
-    def __init__(self, parent):
-        super(AdvancedWindow, self).__init__(parent=parent, title="Advanced Settings", size=(600,400), style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
+class ReportWindow(wx.Frame):
+    def __init__(self, parent, mainPanel):
+        super(ReportWindow, self).__init__(parent=parent, title="Report Issue", size=(600,400), style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
+        
+        self.panel = wx.Panel()
+        self.panel.sizer = wx.BoxSizer(wx.VERTICAL)
+        
         self.Center()
         self.Show(True)
 
@@ -114,7 +118,7 @@ class MainPanel(wx.Panel):
 
         # members
         self.mainSizer = wx.BoxSizer(wx.VERTICAL)
-        self.grid = wx.GridBagSizer(hgap=5, vgap=5)
+        #self.grid = wx.GridBagSizer(hgap=5, vgap=5)
 
         self.mouse = pymouse.Controller()
         self.keyboard = pykeyboard.Controller()
@@ -445,6 +449,7 @@ class MainPanel(wx.Panel):
             
         else:
             self.commandList.Destroy()
+            self.commandListLabel.Destroy()
             self.commandTextBox.Destroy()
             self.commandLabel.Destroy()
 
