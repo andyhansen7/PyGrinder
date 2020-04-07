@@ -24,7 +24,7 @@ import threading
 
 class MainWindow(wx.Frame):
     def __init__(self, title):
-        super().__init__(parent=None, title=title, size=(800,600), style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
+        super().__init__(parent=None, title=title, size=(800,600))
 
         self.panel = MainPanel(self)
 
@@ -49,6 +49,8 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnAbout, self.menuAbout)
         self.Bind(wx.EVT_MENU, self.OnReport, self.menuReport)
         self.Bind(wx.EVT_MENU, self.OnExit, self.menuExit)
+        
+        self.Bind(wx.EVT_SIZE, self.OnResize);
 
         self.Center()
         self.Show(True)
@@ -101,6 +103,10 @@ class MainWindow(wx.Frame):
 
     def OnExit(self, e):
         self.Close(True)
+        
+    def OnResize(self, e):
+        w,h = e.GetSize()
+        self.panel.Resize(w, h)
 
 class ReportWindow(wx.Frame):
     def __init__(self, parent, mainPanel):
@@ -126,6 +132,9 @@ class MainPanel(wx.Panel):
         self.logger = open("PyGrinder.log", "w")
 
         # vars
+        self.width = 800
+        self.height = 600
+        
         self.running = False
         self.cancelled = False
         
@@ -160,12 +169,12 @@ class MainPanel(wx.Panel):
         self.SetBackgroundColour("steel blue")
 
         # center title
-        titleFont = wx.Font(wx.FontInfo(20).Bold())
+        titleFont = wx.Font(wx.FontInfo(int(.025 * self.height)).Bold())
 
         self.progTitle = wx.StaticText(self, label="PyGrinder 1.0.0", style=wx.ALIGN_CENTER_HORIZONTAL)
         #self.progTitle.Center()
         self.progTitle.SetFont(titleFont)
-        self.progTitle.SetPosition((300, 250))
+        self.progTitle.SetPosition((int(.375 * self.width), int(.416 * self.height)))
         self.mainSizer.Add(self.progTitle, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
         # timer
@@ -173,7 +182,7 @@ class MainPanel(wx.Panel):
 
         self.timer = wx.TextCtrl(self, name="Timer", style=wx.TE_READONLY)
         self.timer.SetFont(timerFont)
-        self.timer.SetSize(500, 400, 230, 60)
+        self.timer.SetSize(int(.675 * self.width), int(.666 * self.height), int(.2875 * self.width), int(.1 * self.height))
         self.timer.SetForegroundColour('black')
         self.timer.SetValue('00:00.00')
         self.mainSizer.Add(self.timer, wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
@@ -183,13 +192,13 @@ class MainPanel(wx.Panel):
 
         self.timerLabel = wx.StaticText(self, name="Timer Label")
         self.timerLabel.SetFont(timerLabelFont)
-        self.timerLabel.SetSize(500,370,200,60)
+        self.timerLabel.SetSize(int(.675 * self.width), int(.616 * self.height), int(0.25 * self.width), int(0.1 * self.height))
         self.timerLabel.SetLabel('')
         self.mainSizer.Add(self.timerLabel, wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
         # start control
         self.startButton = wx.Button(self, label="START")
-        self.startButton.SetSize(10, 20, 370, 200, wx.SIZE_FORCE)
+        self.startButton.SetSize(int(.0125 * self.width), int(.033 * self.height), int(.4625 * self.width), int(0.333 * self.height), wx.SIZE_FORCE)
         self.startButton.SetBackgroundColour('pale green')
         self.startButton.SetForegroundColour('white')
         self.startButton.SetFont(timerFont)
@@ -197,7 +206,7 @@ class MainPanel(wx.Panel):
 
         # stop control
         self.stopButton = wx.Button(self, label="STOP")
-        self.stopButton.SetSize(400, 20, 370, 200, wx.SIZE_FORCE)
+        self.stopButton.SetSize(int(.5 * self.width), int(.033 * self.height), int(.4625 * self.width), int(0.333 * self.height), wx.SIZE_FORCE)
         self.stopButton.SetBackgroundColour('red')
         self.stopButton.SetForegroundColour('white')
         self.stopButton.SetFont(timerFont)
@@ -205,17 +214,17 @@ class MainPanel(wx.Panel):
 
         # hopper
         self.hopCheckBox = wx.CheckBox(self, label="Add periodic hop")
-        self.hopCheckBox.SetPosition((20,300))
+        self.hopCheckBox.SetPosition((int(.025 * self.width), int(0.5 * self.height)))
         self.mainSizer.Add(self.hopCheckBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
         # strafer
         self.strafeCheckBox = wx.CheckBox(self, label="Add periodic strafe")
-        self.strafeCheckBox.SetPosition((20,330))
+        self.strafeCheckBox.SetPosition((int(.025 * self.width), int(0.55 * self.height)))
         self.mainSizer.Add(self.strafeCheckBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
         # command sender
         self.commandCheckBox = wx.CheckBox(self, label="Add periodic commands")
-        self.commandCheckBox.SetPosition((20,360))
+        self.commandCheckBox.SetPosition((int(.025 * self.width), int(0.6 * self.height)))
         self.mainSizer.Add(self.commandCheckBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
         # events 
@@ -251,6 +260,13 @@ class MainPanel(wx.Panel):
             self.commandTextBox.SetValue(commands[0])
             self.commandList.SetValue(commands[1])
 
+    def Resize(self, width, height):
+        self.width = width
+        self.height = height
+        
+        self.Refresh()
+        self.Update()
+    
     def getData(self):
         return ( str(self.hopCheckBox.GetValue()) + ' ' + str(self.hop_delay) + ' ' + str(self.strafeCheckBox.GetValue()) + ' ' + str(self.strafe_delay) + ' ' + str(self.commandCheckBox.GetValue()) + ' ' + str(self.command_delay) + '\n' + self.command_list_text)
 
@@ -393,11 +409,11 @@ class MainPanel(wx.Panel):
     def OnHopCheck(self, e):
         if self.hopCheckBox.GetValue():
             self.hopTextBox = wx.TextCtrl(self, name="Hop Delay")
-            self.hopTextBox.SetSize(350, 300, 100, 20)
+            self.hopTextBox.SetSize(int(.4375 * self.width), int(.5 * self.height), int(.125 * self.width), int(.033 * self.height))
             self.mainSizer.Add(self.hopTextBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
             self.hopLabel = wx.StaticText(self, label="Hop interval (seconds):", style=wx.ALIGN_RIGHT)
-            self.hopLabel.SetPosition((225, 300))
+            self.hopLabel.SetPosition((int(.28125 * self.width), int(.5 * self.height)))
             self.mainSizer.Add(self.hopLabel, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
         
             self.Bind(wx.EVT_TEXT, self.OnHopTextBoxText, self.hopTextBox)
@@ -411,11 +427,11 @@ class MainPanel(wx.Panel):
     def OnStrafeCheck(self, e):
         if self.strafeCheckBox.GetValue():
             self.strafeTextBox = wx.TextCtrl(self, name="Strafe Delay")
-            self.strafeTextBox.SetSize(350, 330, 100, 20)
+            self.strafeTextBox.SetSize(int(.4375 * self.width), int(0.55 * self.height), int(.125 * self.width), int(.033 * self.height))
             self.mainSizer.Add(self.strafeTextBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
             self.strafeLabel = wx.StaticText(self, label="Strafe interval (seconds):", style=wx.ALIGN_RIGHT)
-            self.strafeLabel.SetPosition((218, 330))
+            self.strafeLabel.SetPosition((int(.2725 * self.width), int(0.55 * self.height)))
             self.mainSizer.Add(self.strafeLabel, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
             self.Bind(wx.EVT_TEXT, self.OnStrafeTextBoxText, self.strafeTextBox)
@@ -429,19 +445,19 @@ class MainPanel(wx.Panel):
     def OnCommandCheck(self, e):
         if self.commandCheckBox.GetValue():
             self.commandList = wx.TextCtrl(self, name="Command List", style=wx.TE_MULTILINE)
-            self.commandList.SetSize(20, 410, 200, 100)
+            self.commandList.SetSize(int(.025 * self.width), int(.683 * self.height), int(.25 * self.width), int(.166 * self.height))
             self.mainSizer.Add(self.commandList, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
             self.commandListLabel = wx.StaticText(self, label="Command list (enter on seperate lines):", style=wx.ALIGN_RIGHT)
-            self.commandListLabel.SetPosition((20, 390))
+            self.commandListLabel.SetPosition((int(.025 * self.width), int(.65 * self.height)))
             self.mainSizer.Add(self.commandListLabel, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
             self.commandTextBox = wx.TextCtrl(self, name="Command Delay")
-            self.commandTextBox.SetSize(350, 360, 100, 20)
+            self.commandTextBox.SetSize(int(.4375 * self.width), int(.6 * self.height), int(.125 * self.width), int(0.033 * self.height))
             self.mainSizer.Add(self.commandTextBox, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
             self.commandLabel = wx.StaticText(self, label="Command interval (seconds):", style=wx.ALIGN_RIGHT)
-            self.commandLabel.SetPosition((190, 360))
+            self.commandLabel.SetPosition((int(.2375 * self.width), int(.6 * self.height)))
             self.mainSizer.Add(self.commandLabel, 0,  wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 20)
 
             self.Bind(wx.EVT_TEXT, self.OnCommandListText, self.commandList)
