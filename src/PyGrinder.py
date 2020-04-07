@@ -260,12 +260,12 @@ class MainPanel(wx.Panel):
             self.commandTextBox.SetValue(commands[0])
             self.commandList.SetValue(commands[1])
 
-    def Resize(self, width, height):
-        self.width = width
-        self.height = height
+    def Resize(self, w, h):
+        self.width = w
+        self.height = h
         
-        self.Refresh()
-        self.Update()
+        self.Hide()
+        self.Show()
     
     def getData(self):
         return ( str(self.hopCheckBox.GetValue()) + ' ' + str(self.hop_delay) + ' ' + str(self.strafeCheckBox.GetValue()) + ' ' + str(self.strafe_delay) + ' ' + str(self.commandCheckBox.GetValue()) + ' ' + str(self.command_delay) + '\n' + self.command_list_text)
