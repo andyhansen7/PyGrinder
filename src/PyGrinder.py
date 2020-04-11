@@ -22,11 +22,36 @@ import random
 import datetime
 import threading
 
-class MainWindow(wx.Frame):
-    def __init__(self, title):
-        super().__init__(parent=None, title=title, size=(800,600))
+class WindowController():
+    def __init__(self, title, defWidth, defHeight):
+        self.width = defWidth
+        self.height = defHeight
+        self.title = title
+        
+        self.app = wx.App() 
+        
+        self.window = MainWindow(self, self.title, self.width, self.height)
+        
+        self.app.MainLoop()
+        
+    def Resize(self, w, h):
+        self.width = w 
+        self.height = h 
+        
+        self.window.Destroy()
+        self.window = MainWindow(self, self.title, self.width, self.height)
+        
 
-        self.panel = MainPanel(self)
+class MainWindow(wx.Frame):
+    def __init__(self, parent, title, width, height):
+        super().__init__(parent=None, title=title, size=(width,height))
+        
+        self.parent = parent
+        
+        self.width = width
+        self.height = height
+
+        self.panel = MainPanel(self, width, height)
 
         self.CreateStatusBar()
 
@@ -106,7 +131,8 @@ class MainWindow(wx.Frame):
         
     def OnResize(self, e):
         w,h = e.GetSize()
-        self.panel.Resize(w, h)
+        if w != self.width and h != self.height:
+            self.parent.Resize(w, h)
 
 class ReportWindow(wx.Frame):
     def __init__(self, parent, mainPanel):
@@ -119,7 +145,7 @@ class ReportWindow(wx.Frame):
         self.Show(True)
 
 class MainPanel(wx.Panel):
-    def __init__(self, parent):
+    def __init__(self, parent, width, height):
         super().__init__(parent)
 
         # members
@@ -132,8 +158,8 @@ class MainPanel(wx.Panel):
         self.logger = open("PyGrinder.log", "w")
 
         # vars
-        self.width = 800
-        self.height = 600
+        self.width = width
+        self.height = height
         
         self.running = False
         self.cancelled = False
@@ -259,13 +285,6 @@ class MainPanel(wx.Panel):
             self.OnCommandCheck(None)
             self.commandTextBox.SetValue(commands[0])
             self.commandList.SetValue(commands[1])
-
-    def Resize(self, w, h):
-        self.width = w
-        self.height = h
-        
-        self.Hide()
-        self.Show()
     
     def getData(self):
         return ( str(self.hopCheckBox.GetValue()) + ' ' + str(self.hop_delay) + ' ' + str(self.strafeCheckBox.GetValue()) + ' ' + str(self.strafe_delay) + ' ' + str(self.commandCheckBox.GetValue()) + ' ' + str(self.command_delay) + '\n' + self.command_list_text)
@@ -481,6 +500,4 @@ class MainPanel(wx.Panel):
     def OnCommandTextBoxText(self, e):
         self.command_delay = float(self.commandTextBox.GetValue())
 
-app = wx.App(False)
-frame = MainWindow("PyGrinder by Andy Hansen")
-app.MainLoop()
+run = WindowController("PyGrinder by Andy Hansen", 800, 600)
